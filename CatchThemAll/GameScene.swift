@@ -69,6 +69,7 @@ struct PhysicsCategory {
   static let trainer     : UInt32 = 0b100      // 4
 }
 
+
 class GameScene: SKScene {
   let player = SKSpriteNode(imageNamed: "ash")
   let label = SKLabelNode(fontNamed: "Chalkduster")
@@ -95,6 +96,11 @@ class GameScene: SKScene {
   }
   
   override func didMove(to view: SKView) {
+    // Create the gesture recognizer for panning
+    let panGestureRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanFrom))
+    // Add the gesture recognizer to the scene's view
+    self.view!.addGestureRecognizer(panGestureRecognizer)
+    
     // backgroundColor = SKColor.white
     background.zPosition = -1
     background.position = CGPoint(x: frame.size.width / 2, y: frame.size.height / 2)
@@ -194,6 +200,48 @@ class GameScene: SKScene {
     pokeball.run(SKAction.sequence([actionMove, actionMoveDone]))
   }
   
+  func setNewY (current: CGFloat, translation: CGFloat, height: CGFloat) -> CGFloat {
+    if (current + translation + height > UIScreen.main.bounds.height) {
+      return UIScreen.main.bounds.height - height
+    } else if (current + translation - height < 0) {
+      return height
+    }
+    return current + translation;
+    
+    
+  }
+  
+  @objc func handlePanFrom(_ recognizer: UIPanGestureRecognizer) {
+      // This function is called when a pan gesture is recognized. Respond with code here.
+    if recognizer.state == .began {
+      var touchLocation = recognizer.location(in: recognizer.view)
+      touchLocation = self.convertPoint(fromView: touchLocation)
+
+    } else if recognizer.state == .changed {
+      var translation = recognizer.translation(in: recognizer.view!)
+      translation = CGPoint(x: translation.x, y: -translation.y)
+     
+      player.position = CGPoint(x: player.position.x, y: setNewY(current: player.position.y, translation: translation.y, height: player.size.height))
+      
+      recognizer.setTranslation(.zero, in: recognizer.view)
+    } else if recognizer.state == .ended {
+//
+//      let scrollDuration = 0.2
+//      let velocity = recognizer.velocity(in: recognizer.view)
+//      let pos = player.position
+//
+//        // This just multiplies your velocity with the scroll duration.
+//        let p = CGPoint(x: velocity.x * CGFloat(scrollDuration), y: velocity.y * CGFloat(scrollDuration))
+//
+//        var newPos = CGPoint(x: pos.x + p.x, y: pos.y + p.y)
+//        player.removeAllActions()
+//
+//      let moveTo = SKAction.move(to: newPos, duration: scrollDuration)
+//      moveTo.timingMode = .easeOut
+//      player.run(moveTo)
+      
+    }
+  }
   
   func pokeballDidCollideWithPokemon(_ pokeball: SKSpriteNode, _ pokemon: SKSpriteNode) {
     print("Hit")
@@ -249,3 +297,4 @@ extension GameScene: SKPhysicsContactDelegate {
     }
   }
 }
+
